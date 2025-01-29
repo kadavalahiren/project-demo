@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ 'AdminLTE Dashboard' }}</title>
+    <title>{{ 'AdminLTE' }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="serverurl" content="{{ env('APP_URL') }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

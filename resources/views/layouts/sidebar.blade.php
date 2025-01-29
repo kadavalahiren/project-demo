@@ -2,7 +2,6 @@
     <div class="app-brand demo ">
         <a href="index.html" class="app-brand-link">
             <span class="app-brand-logo demo">
-                <img src="{{ asset('admin/newcustom/assets/img/Bitmap.png') }}" alt="">
                 <span class="app-brand-text demo menu-text fw-bold">
                    <h1>LOGO</h1>
                 </span>

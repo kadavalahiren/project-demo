@@ -81,7 +81,7 @@ class CategoryController extends Controller
         $validator = Validator::make($request->all(), [
             'category_name' => 'required',
             'category_desc' => 'nullable',
-            'category_image' => "nullable|mimes:jpeg,png,jpg",
+            'category_image' => 'nullable|mimes:jpeg,png,jpg',
         ]);
 
         if ($validator->fails()) {
@@ -92,21 +92,29 @@ class CategoryController extends Controller
             DB::beginTransaction();
             try {
                 // creating Folder if not exists
-                $destinationPath = public_path('category/');
+                $destinationPath = public_path('/storage/categories/');
+                $destinationPathThumbnail = public_path('/storage/categories/thumbnail/');
 
                 if (!file_exists($destinationPath)) {
                     @mkdir($destinationPath, 0777, true);
                 }
+                if (!file_exists($destinationPathThumbnail)) {
+                    @mkdir($destinationPathThumbnail, 0777, true);
+                }
 
-                $imagePath = '';
+                $fileName = '';
                 if ($request->hasFile('category_image')) {
-                    $imagePath = $request->file('category_image')->store('category', 'public');
-                } else {
-                    $imagePath = null;
+                    $file = $request->file('category_image');
+                    $fileName = md5($file->getClientOriginalName() . time()) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path() . '/storage/categories/', $fileName);
+                    if (File::copy(public_path('/storage/categories/' . $fileName), public_path('/storage/categories/thumbnail/' . $fileName))) {
+                    }
+
+                    GlobalHelper::createThumbnail(public_path('/storage/categories/thumbnail/' . $fileName), 100, 100);
                 }
 
                 $category = new Category();
-                $category->category_image = $imagePath;
+                $category->category_image = $fileName;
                 $category->category_name = $request->category_name;
                 $category->category_desc = $request->category_desc ?? '';
                 $category->status = $request->status;
@@ -157,24 +165,30 @@ class CategoryController extends Controller
         } else {
             DB::beginTransaction();
             try {
-                // creating Folder if not exists
-                $destinationPath = public_path('categories/');
+
+                $destinationPath = public_path('/storage/categories/');
+                $destinationPathThumbnail = public_path('/storage/categories/thumbnail/');
+
                 if (!file_exists($destinationPath)) {
                     @mkdir($destinationPath, 0777, true);
+                }
+                if (!file_exists($destinationPathThumbnail)) {
+                    @mkdir($destinationPathThumbnail, 0777, true);
                 }
 
                 $fileName = '';
                 if ($request->hasFile('category_image')) {
-                    if ($category->category_image && Storage::exists('public/' . $category->category_image)) {
-                        Storage::delete('public/' . $category->category_image);
+                    $file = $request->file('category_image');
+                    $fileName = md5($file->getClientOriginalName() . time()) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path() . '/storage/categories/', $fileName);
+                    if (File::copy(public_path('/storage/categories/' . $fileName), public_path('/storage/categories/thumbnail/' . $fileName))) {
                     }
-                    $imagePath = $request->file('category_image')->store('category', 'public');
-                } else {
-                    $imagePath = $category->category_image;
+
+                    GlobalHelper::createThumbnail(public_path('/storage/categories/thumbnail/' . $fileName), 100, 100);
                 }
 
                 $category = Category::findOrFail($category->id);
-                $category->category_image = $imagePath;
+                $category->category_image = $fileName;
                 $category->category_name = $request->category_name;
                 $category->category_desc = $request->category_desc ?? '';
                 $category->status = $request->status;

@@ -9,7 +9,7 @@
 
     <title>Sign Up</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('newcustom/assets/img/Bitmap.png') }}" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

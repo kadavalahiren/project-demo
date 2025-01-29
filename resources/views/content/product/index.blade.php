@@ -108,7 +108,7 @@
                         searchable: false,
                         render: function(data, type, row) {
                             if (row.product_image_url != '' && row.product_image_url != null) {
-                                return "<img class=\"imageShow\" src=\"{{ config('constants.BASE_URL_MEDIA') }}/categories/" +
+                                return "<img class=\"imageShow\" src=\"{{ config('constants.BASE_URL_MEDIA') }}/products/" +
                                     row.product_image_url +"\" height=\"50\" width=\"50\"/>";
                             } else {
                                 var noImg = "no_image.jpg";

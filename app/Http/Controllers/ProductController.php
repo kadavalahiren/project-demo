@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -100,21 +101,31 @@ class ProductController extends Controller
         } else {
             DB::beginTransaction();
             try {
-                // creating Folder if not exists
-                $destinationPath = public_path('categories/');
+
+                $destinationPath = public_path('/storage/products/');
+                $destinationPathThumbnail = public_path('/storage/products/thumbnail/');
 
                 if (!file_exists($destinationPath)) {
                     @mkdir($destinationPath, 0777, true);
                 }
 
+                if (!file_exists($destinationPathThumbnail)) {
+                    @mkdir($destinationPathThumbnail, 0777, true);
+                }
+
+                $fileName = '';
                 if ($request->hasFile('product_image')) {
-                    $imagePath = $request->file('product_image')->store('products', 'public');
-                } else {
-                    $imagePath = null;  // No image uploaded
+                    $file = $request->file('product_image');
+                    $fileName = md5($file->getClientOriginalName() . time()) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path() . '/storage/products/', $fileName);
+                    if (File::copy(public_path('/storage/products/' . $fileName), public_path('/storage/products/thumbnail/' . $fileName))) {
+                    }
+
+                    GlobalHelper::createThumbnail(public_path('/storage/products/thumbnail/' . $fileName), 100, 100);
                 }
 
                 $product = new Product();
-                $product->image = $imagePath;
+                $product->image = $fileName;
                 $product->title = $request->product_name;
                 $product->description = $request->product_desc ?? '';
                 $product->price = $request->product_price ?? '';
@@ -188,26 +199,30 @@ class ProductController extends Controller
         } else {
             DB::beginTransaction();
             try {
-                // creating Folder if not exists
-                $destinationPath = public_path('product/');
+                $destinationPath = public_path('/storage/products/');
+                $destinationPathThumbnail = public_path('/storage/products/thumbnail/');
 
                 if (!file_exists($destinationPath)) {
                     @mkdir($destinationPath, 0777, true);
                 }
 
+                if (!file_exists($destinationPathThumbnail)) {
+                    @mkdir($destinationPathThumbnail, 0777, true);
+                }
+
+                $fileName = '';
                 if ($request->hasFile('product_image')) {
-                    // Delete old image if exists
-                    if ($product->product_image && Storage::exists('public/' . $product->product_image)) {
-                        Storage::delete('public/' . $product->product_image);
+                    $file = $request->file('product_image');
+                    $fileName = md5($file->getClientOriginalName() . time()) . '.' . $file->getClientOriginalExtension();
+                    $file->move(public_path() . '/storage/products/', $fileName);
+                    if (File::copy(public_path('/storage/products/' . $fileName), public_path('/storage/products/thumbnail/' . $fileName))) {
                     }
-                    // Store the new image
-                    $imagePath = $request->file('product_image')->store('products', 'public');
-                } else {
-                    $imagePath = $product->product_image;  // Keep the old image if no new one is uploaded
+
+                    GlobalHelper::createThumbnail(public_path('/storage/products/thumbnail/' . $fileName), 100, 100);
                 }
 
                 $product = Product::findOrFail($product->id);
-                $product->image = $imagePath;
+                $product->image = $fileName;
                 $product->title = $request->product_name;
                 $product->description = $request->product_desc ?? '';
                 $product->price = $request->product_price ?? '';
